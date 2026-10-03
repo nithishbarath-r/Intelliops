@@ -1,0 +1,43 @@
+# SAP AI Core serving template — put this in the Git repo onboarded to AI Core.
+apiVersion: ai.sap.com/v1alpha1
+kind: ServingTemplate
+metadata:
+  name: intelliops-excursion-risk
+  annotations:
+    scenarios.ai.sap.com/description: "IntelliOps cold-chain 24h excursion risk"
+    scenarios.ai.sap.com/name: "intelliops-coldchain"
+    executables.ai.sap.com/description: "Logistic model over reefer time-series features"
+    executables.ai.sap.com/name: "excursion-risk-server"
+  labels:
+    scenarios.ai.sap.com/id: "intelliops-coldchain"
+    ai.sap.com/version: "1.0.0"
+spec:
+  inputs:
+    artifacts:
+      - name: riskmodel
+  template:
+    apiVersion: "serving.kserve.io/v1beta1"
+    metadata:
+      annotations: |
+        autoscaling.knative.dev/metric: concurrency
+        autoscaling.knative.dev/target: 1
+        autoscaling.knative.dev/targetBurstCapacity: 0
+      labels: |
+        ai.sap.com/resourcePlan: starter
+    spec: |
+      predictor:
+        imagePullSecrets:
+          - name: intelliops-docker-secret
+        minReplicas: 1
+        maxReplicas: 2
+        containers:
+        - name: kserve-container
+          image: "docker.io/<your-registry-user>/intelliops-risk:1.0.0"
+          ports:
+            - containerPort: 9001
+              protocol: TCP
+          env:
+            - name: STORAGE_URI
+              value: "{{inputs.artifacts.riskmodel}}"
+            - name: MODEL_DIR
+              value: "/mnt/models"

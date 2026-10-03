@@ -1,0 +1,6 @@
+ID;code;name;initials;phone;vehicle;type
+d1000000-0000-4000-8000-000000000001;driver-1;Raghul;RJ;+919159708095;TN 09 AB 4521;Long-haul reefer
+d1000000-0000-4000-8000-000000000002;driver-2;Nithin Adhithya;NA;+919363498553;TN 58 CD 1187;Refrigerated van
+d1000000-0000-4000-8000-000000000003;driver-3;Prakash;P;+916381920030;TN 37 EF 7620;Cold-chain carrier
+d1000000-0000-4000-8000-000000000004;driver-4;Nithish Barath;NB;+919843759696;TN 45 GH 3098;District distribution van
+d1000000-0000-4000-8000-000000000005;driver-5;Sabarish Krishnan;SK;+918807087857;TN 63 JK 8842;Last-mile vaccine carrier

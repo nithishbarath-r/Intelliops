@@ -1,0 +1,91 @@
+{
+  "name": "intelliops-btp",
+  "version": "1.0.0",
+  "description": "IntelliOps Cold Chain Guardian — SAP CAP backend for SAP BTP (HANA Cloud, Event Mesh, AI Core, S/4HANA PM, Build Process Automation)",
+  "private": true,
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@cap-js/hana": "^3",
+    "@sap-cloud-sdk/connectivity": "^4",
+    "@sap-cloud-sdk/http-client": "^4",
+    "@sap/cds": "^10",
+    "@sap/xssec": "^4",
+    "express": "^4"
+  },
+  "devDependencies": {
+    "@cap-js/cds-test": "^1",
+    "@cap-js/sqlite": "^3",
+    "@sap/cds-dk": "^10.1.0"
+  },
+  "scripts": {
+    "start": "cds-serve",
+    "dev": "cds-serve --profile development",
+    "test": "node --test test/*.test.js",
+    "simulate": "node feeds/reefer-simulator.js",
+    "weather": "node feeds/weather-bridge.js"
+  },
+  "cds": {
+    "requires": {
+      "messaging": {
+        "kind": "local-messaging"
+      },
+      "auth": {
+        "kind": "dummy"
+      },
+      "[production]": {
+        "db": "hana",
+        "auth": "xsuaa",
+        "messaging": {
+          "kind": "enterprise-messaging-shared",
+          "format": "cloudevents"
+        },
+        "destinations": true
+      }
+    },
+    "intelliops": {
+      "topicPrefix": "intelliops/coldchain",
+      "s4": {
+        "mode": "mock",
+        "destination": "S4HANA_PM",
+        "notificationType": "M2",
+        "priority": "1",
+        "orderType": "PM01"
+      },
+      "bpa": {
+        "mode": "mock",
+        "destination": "SBPA_API",
+        "definitionId": "eu10.intelliops.coldchainrecovery.recoveryApproval"
+      },
+      "aicore": {
+        "mode": "mock",
+        "destination": "AICORE",
+        "resourceGroup": "default",
+        "deploymentId": ""
+      },
+      "joule": {
+        "mode": "mock",
+        "destination": "AICORE",
+        "resourceGroup": "default",
+        "deploymentId": ""
+      },
+      "[production]": {
+        "topicPrefix": "sap/intelliops/coldchain",
+        "s4": {
+          "mode": "live"
+        },
+        "bpa": {
+          "mode": "live"
+        },
+        "aicore": {
+          "mode": "live"
+        },
+        "joule": {
+          "mode": "live"
+        }
+      }
+    }
+  }
+}

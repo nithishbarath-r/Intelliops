@@ -1,0 +1,102 @@
+_schema-version: "3.1"
+ID: intelliops-coldchain
+version: 1.0.0
+description: IntelliOps Cold Chain Guardian on SAP BTP (CAP + HANA Cloud + Event Mesh + approuter)
+
+parameters:
+  enable-parallel-deployments: true
+
+build-parameters:
+  before-all:
+    - builder: custom
+      commands:
+        - npm ci
+        - npx cds build --production
+
+modules:
+  # CAP service: OData API, Event Mesh subscriber, adapters to S/4HANA PM, BPA and AI Core
+  - name: intelliops-srv
+    type: nodejs
+    path: gen/srv
+    parameters:
+      buildpack: nodejs_buildpack
+      memory: 256M
+    build-parameters:
+      builder: npm
+    provides:
+      - name: srv-api
+        properties:
+          srv-url: ${default-url}
+    requires:
+      - name: intelliops-db
+      - name: intelliops-uaa
+      - name: intelliops-messaging
+      - name: intelliops-destination
+    properties:
+      # set the real ids after deploying the AI Core / BPA artifacts:
+      # cds_intelliops_aicore_deploymentId, cds_intelliops_joule_deploymentId, cds_intelliops_bpa_definitionId
+      NODE_ENV: production
+
+  # HANA Cloud HDI deployer (tables, views, seed data)
+  - name: intelliops-db-deployer
+    type: hdb
+    path: gen/db
+    parameters:
+      buildpack: nodejs_buildpack
+    requires:
+      - name: intelliops-db
+
+  # Approuter: serves the React cockpit and routes /odata to CAP with XSUAA login
+  - name: intelliops-app
+    type: approuter.nodejs
+    path: app/router
+    parameters:
+      memory: 256M
+      keep-existing-routes: true
+    build-parameters:
+      builder: custom
+      commands:
+        - npm --prefix ../../.. ci
+        - npm --prefix ../../.. run build:btp
+        - node copy-ui.js
+        - npm install --omit=dev
+    requires:
+      - name: intelliops-uaa
+      - name: srv-api
+        group: destinations
+        properties:
+          name: srv-api
+          url: ~{srv-url}
+          forwardAuthToken: true
+          timeout: 60000
+
+resources:
+  - name: intelliops-db
+    type: com.sap.xs.hdi-container
+    parameters:
+      service: hana
+      service-plan: hdi-shared
+
+  - name: intelliops-uaa
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: xsuaa
+      service-plan: application
+      path: ./xs-security.json
+      config:
+        xsappname: intelliops-coldchain-${org}-${space}
+        tenant-mode: dedicated
+
+  - name: intelliops-messaging
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: enterprise-messaging
+      service-plan: default
+      path: ./event-mesh.json
+
+  # Holds S4HANA_PM, SBPA_API and AICORE (create them in the BTP cockpit — see docs)
+  - name: intelliops-destination
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: destination
+      service-plan: lite

@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Cold-chain recovery approval — process inputs",
+  "description": "Context sent by IntelliOps (srv/adapters/bpa.js) when it starts the SAP Build Process Automation process.",
+  "type": "object",
+  "required": ["shipmentNumber", "temperature", "timeToBreachMin", "pmNotification"],
+  "properties": {
+    "shipmentNumber": { "type": "string", "example": "CN-24018" },
+    "route": { "type": "string", "example": "Chennai State Store -> Madurai District Store" },
+    "temperature": { "type": "number", "example": 9.2 },
+    "timeToBreachMin": { "type": "integer", "example": 136 },
+    "riskProbability": { "type": "number", "example": 0.92 },
+    "doses": { "type": "integer", "example": 12000 },
+    "childrenAtRisk": { "type": "integer", "example": 380 },
+    "pmNotification": { "type": "string", "example": "10004701" },
+    "recommendedOption": { "type": "string", "enum": ["DIVERT_REICE", "QUARANTINE", "REALLOCATE_BUFFER"] }
+  }
+}

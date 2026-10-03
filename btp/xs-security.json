@@ -1,0 +1,19 @@
+{
+  "xsappname": "intelliops-coldchain",
+  "tenant-mode": "dedicated",
+  "scopes": [
+    { "name": "$XSAPPNAME.Coordinator", "description": "Approve cold-chain recovery actions" },
+    { "name": "$XSAPPNAME.Driver", "description": "Receive and acknowledge recovery instructions" }
+  ],
+  "role-templates": [
+    { "name": "Coordinator", "scope-references": ["$XSAPPNAME.Coordinator"] },
+    { "name": "Driver", "scope-references": ["$XSAPPNAME.Driver"] }
+  ],
+  "role-collections": [
+    { "name": "IntelliOps_Coordinator", "role-template-references": ["$XSAPPNAME.Coordinator"] },
+    { "name": "IntelliOps_Driver", "role-template-references": ["$XSAPPNAME.Driver"] }
+  ],
+  "oauth2-configuration": {
+    "redirect-uris": ["https://*.hana.ondemand.com/**", "https://*.applicationstudio.cloud.sap/**", "http://localhost:*/**"]
+  }
+}
